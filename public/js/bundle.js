@@ -21300,6 +21300,7 @@ module.exports = Sha512
 
 }).call(this,require("buffer").Buffer)
 },{"./hash":129,"buffer":4,"inherits":113}],137:[function(require,module,exports){
+(function (Buffer){
 var crypto = require('crypto-browserify');
 var myModule = require('../public/js/myModule.js');
 var client = new BinaryClient('ws://localhost:9000');
@@ -21311,24 +21312,30 @@ var FileStream = require('file-stream');
 client.on('stream', function(stream, meta) {
   // Create a writable stream so pipe the incoming data through
   //var writable = new Writable();
-  debugger;
   var fileWriteStream = streamSaver.createWriteStream(meta.name);
 
   // Send the blob through the encrypter
   var sessionKey = crypto.randomBytes(16);
   var iv = crypto.randomBytes(16);
 
-  console.log('sessionKey: %s', sessionKey);
-  console.log('iv: %s', iv);
+  // Hardcoding sessionKey and iv for testing
+  var sessionKeyTest = new Buffer.from('9Ur3xaienoZ2ZbgCjKAtcw==', 'base64');
+  //var sessionKeyTest = new Buffer.from('a4f5bad1b6e6175a900d5f37f532ff14', 'base64');
+  var ivTest = new Buffer.from('PYY8oOJL7wN6OSqKjUBZzA==', 'base64');
+  //var ivTest = '2e123bb5cc238a276689fc42dca65643';
+
+  console.log('sessionKey: %s', sessionKey.toString('hex'));
+  console.log('iv: %s', iv.toString('hex'));
 
   // Should use authentication: http://lollyrock.com/articles/nodejs-encryption/
   // Init the cyper bits
-  var decipher = crypto.createDecipheriv('aes-128-cbc', sessionKey, iv);
+  var decipher = crypto.createDecipheriv('aes-128-cbc', sessionKeyTest, ivTest);
   //cipher.pipe(fileWriteStream);
   //stream.pipe(cipher).pipe(fileWriteStream);;
 
   // Also should ZIP this before encrypt
-  stream.pipe(decipher).pipe(fileWriteStream);
+  stream.pipe(decipher);
+  //stream.pipe(decipher).pipe(fileWriteStream);
 
   // Create something that the cipher pushes data out to (will be a file eventually)
 
@@ -21348,6 +21355,34 @@ client.on('open', function(){
   var self = this;
   var box = $('#box');
 
+	// Send the blob through the encrypter
+	var sessionKey = crypto.randomBytes(16);
+	var iv = crypto.randomBytes(16);
+
+  function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+  }
+
+  function str2uint8ab(str) {
+    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
+    var bufView = new Uint8Array(buf);
+    for (var i=0, strLen=str.length; i<strLen; i++) {
+      bufView[i] = str.charCodeAt(i);
+    }
+    return bufView;
+  }
+
+	// Hard coding sessionKey and iv for testing
+	//var sessionKeyTest = 'a4f5bad1b6e6175a900d5f37f532ff14';
+	//var ivTest = '2e123bb5cc238a276689fc42dca65643';
+  var sessionKeyTest = '9Ur3xaienoZ2ZbgCjKAtcw==';
+  var ivTest = 'PYY8oOJL7wN6OSqKjUBZzA==';
+
+  var sessionKeyTestBuff = str2uint8ab(sessionKeyTest);
+  var ivTestBuff = str2uint8ab(ivTest);
+
+  debugger;
+
 	window.nodeCrypto = crypto;
 	window.myModule = myModule;
 
@@ -21366,12 +21401,8 @@ client.on('open', function(){
 
       var reader = new FileStream(file);
 
-			// Send the blob through the encrypter
-			var sessionKey = crypto.randomBytes(16);
-			var iv = crypto.randomBytes(16);
-
 			// Init the cyper bits
-			var cipher = crypto.createCipheriv('aes-128-cbc', sessionKey, iv);
+			var cipher = crypto.createCipheriv('aes-128-cbc', sessionKeyTestBuff, ivTestBuff);
 
       console.log("Creating fileReader stream from the file");
 
@@ -21389,6 +21420,23 @@ client.on('open', function(){
 	}, false);
 
 });
+
+
+function stringToUint(string) {
+  var string = btoa(unescape(encodeURIComponent(string))),
+    charList = string.split(''),
+    uintArray = [];
+  for (var i = 0; i < charList.length; i++) {
+    uintArray.push(charList[i].charCodeAt(0));
+  }
+  return new Uint8Array(uintArray);
+}
+
+function uintToString(uintArray) {
+  var encodedString = String.fromCharCode.apply(null, uintArray),
+    decodedString = decodeURIComponent(escape(encodedString));
+  return decodedString;
+}
 
   /*
   box.on('dragenter', doNothing);
@@ -21415,7 +21463,8 @@ client.on('open', function(){
   */
 
 
-},{"../public/js/myModule.js":138,"crypto-browserify":77,"file-stream":106,"stream":24}],138:[function(require,module,exports){
+}).call(this,require("buffer").Buffer)
+},{"../public/js/myModule.js":138,"buffer":4,"crypto-browserify":77,"file-stream":106,"stream":24}],138:[function(require,module,exports){
 // greetings.js
 module.exports = function(name) {
     return 'Hello ' + name + '!';
