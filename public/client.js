@@ -4,7 +4,7 @@ var client = new BinaryClient('ws://localhost:9000');
 var stream = require('stream');
 var WritableStream = stream.Writable();
 var FileStream = require('file-stream');
-var buffer = require('buffer');
+//var Buffer = require('buffer');
 //var Writable = require('stream').Writable;
 
 client.on('stream', function(stream, meta) {
@@ -16,26 +16,24 @@ client.on('stream', function(stream, meta) {
   var sessionKey = crypto.randomBytes(16);
   var iv = crypto.randomBytes(16);
 
-  // Hardcoding sessionKey and iv for testing
-  var sessionKeyTest = new Buffer.from('9Ur3xaienoZ2ZbgCjKAtcw==', 'base64');
-  //var sessionKeyTest = new Buffer.from('a4f5bad1b6e6175a900d5f37f532ff14', 'base64');
-  var ivTest = new Buffer.from('PYY8oOJL7wN6OSqKjUBZzA==', 'base64');
-  //var ivTest = '2e123bb5cc238a276689fc42dca65643';
-
   console.log('sessionKey: %s', sessionKey.toString('hex'));
   console.log('iv: %s', iv.toString('hex'));
+
+  // Hardcoding sessionKey and iv for testing
+  var sessionKeyTest = new Buffer.from('93d1d1541a976333673935683f49b5e8', 'hex');
+  var ivTest = new Buffer.from('27c3465f041e046a61a6f8dc01f0db3d', 'hex');
 
   // Should use authentication: http://lollyrock.com/articles/nodejs-encryption/
   // Init the cyper bits
   var decipher = crypto.createDecipheriv('aes-128-cbc', sessionKeyTest, ivTest);
-  //cipher.pipe(fileWriteStream);
-  //stream.pipe(cipher).pipe(fileWriteStream);;
 
   // Also should ZIP this before encrypt
-  stream.pipe(decipher);
-  //stream.pipe(decipher).pipe(fileWriteStream);
+  stream.pipe(decipher).pipe(fileWriteStream);
+  //stream.pipe(decipher);
 
-  // Create something that the cipher pushes data out to (will be a file eventually)
+  //decipher.on('data', function(e) {
+  //  debugger;
+  //});
 
   /*
   stream.on('data', function(data) {
@@ -57,29 +55,12 @@ client.on('open', function(){
 	var sessionKey = crypto.randomBytes(16);
 	var iv = crypto.randomBytes(16);
 
-  function ab2str(buf) {
-    return String.fromCharCode.apply(null, new Uint8Array(buf));
-  }
-
-  function str2uint8ab(str) {
-    var buf = new ArrayBuffer(str.length*2); // 2 bytes for each char
-    var bufView = new Uint8Array(buf);
-    for (var i=0, strLen=str.length; i<strLen; i++) {
-      bufView[i] = str.charCodeAt(i);
-    }
-    return bufView;
-  }
-
 	// Hard coding sessionKey and iv for testing
-	//var sessionKeyTest = 'a4f5bad1b6e6175a900d5f37f532ff14';
-	//var ivTest = '2e123bb5cc238a276689fc42dca65643';
-  var sessionKeyTest = '9Ur3xaienoZ2ZbgCjKAtcw==';
-  var ivTest = 'PYY8oOJL7wN6OSqKjUBZzA==';
+  var sessionKeyTest = '93d1d1541a976333673935683f49b5e8';
+  var ivTest = '27c3465f041e046a61a6f8dc01f0db3d';
 
-  var sessionKeyTestBuff = str2uint8ab(sessionKeyTest);
-  var ivTestBuff = str2uint8ab(ivTest);
-
-  debugger;
+  var sessionKeyTestBuff = new Buffer(sessionKeyTest, 'hex');
+  var ivTestBuff = new Buffer(ivTest, 'hex');
 
 	window.nodeCrypto = crypto;
 	window.myModule = myModule;

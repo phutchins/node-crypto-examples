@@ -20,8 +20,8 @@ server.on('connection', function(client){
     });
   });
 
-  //var fileStream = fs.createReadStream(__dirname + '/test_file.txt');
-  // client.send(fileStream, { name: 'test_file_returned.txt' });
+  var fileStream = fs.createReadStream(__dirname + '/test_file.txt');
+  client.send(fileStream, { name: 'test_file_returned.txt' });
 });
 
 app.listen(4000, function() {
