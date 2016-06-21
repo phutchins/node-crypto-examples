@@ -823,7 +823,6 @@ util.inherits(Stream, EventEmitter);
 Stream.prototype.pipe = function(dest, options) {
   var source = this;
 
-  debugger;
   function ondata(chunk) {
     if (dest.writable) {
       if (false === dest.write(chunk) && source.pause) {
@@ -840,7 +839,6 @@ Stream.prototype.pipe = function(dest, options) {
     }
   }
 
-  debugger;
   dest.on('drain', ondrain);
 
   // If the 'end' option is not supplied, dest.end() will be called when

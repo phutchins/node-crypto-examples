@@ -15,6 +15,7 @@
     "buffer": "^4.6.0",
     "crypto-browserify": "^3.11.0",
     "express": "^4.13.4",
-    "phutchins/file-stream-js": "^0.1.0"
+    "phutchins/file-stream-js": "^0.1.0",
+    "through": "^2.3.8"
   }
 }

@@ -13,15 +13,23 @@ server.on('connection', function(client){
 
     var file = fs.createWriteStream(meta.name);
 
-    binStream.pipe(file);
-
-    binStream.on('data', function(data) {
-      // Do progress stuff here
+    console.log('Saving file to disk');
+    binStream.pipe(file).on('end', function() {
+      console.log('Reading file test_file.txt to send to user');
+      var fileStream = fs.createReadStream(__dirname + '/test_file.txt');
+      console.log('Streaming file to user as test_file_returned.txt');
+      client.send(fileStream, { name: 'test_file_returned.txt' });
     });
   });
 
-  var fileStream = fs.createReadStream(__dirname + '/test_file.txt');
-  client.send(fileStream, { name: 'test_file_returned.txt' });
+ /*
+  var s = new stream.Readable();
+  s._read = function noop() {}; // redundant? see update below
+  s.push('this is some text to send');
+  s.push(null);
+
+  client.send(s, { name: 'test_file1.txt' });
+  */
 });
 
 app.listen(4000, function() {
