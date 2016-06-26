@@ -13,14 +13,22 @@ server.on('connection', function(client){
 
     var file = fs.createWriteStream(meta.name);
 
-    console.log('Saving file to disk');
-    binStream.pipe(file).on('end', function() {
+    file.on('finish', function() {
+      console.log('All writes done!');
+
       console.log('Reading file test_file.txt to send to user');
       var fileStream = fs.createReadStream(__dirname + '/test_file.txt');
       console.log('Streaming file to user as test_file_returned.txt');
       client.send(fileStream, { name: 'test_file_returned.txt' });
     });
+
+    console.log('Saving file to disk');
+
+    binStream.pipe(file).on('finish', function() {
+      console.log('got finish');
+    });
   });
+
 
  /*
   var s = new stream.Readable();

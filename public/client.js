@@ -135,10 +135,12 @@ client.on('open', function(){
 
       //var decryptTest = encryptedStream.pipe(decipher)
 
+      /*
       var tx = 0;
       stream.on('data', function(data) {
         $('#progress').text(Math.round(tx+=data.rx*100) + '% complete');
       });
+      */
 		//}
 	}, false);
 
