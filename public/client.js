@@ -14,7 +14,7 @@ client.on('stream', function(stream, meta) {
   console.log('Got stream from server for file %s', meta.name);
 
   var logStream = through(function(data) { console.log('logStream1: ', data); this.queue(data) })
-  var logStream2 = through(function(data) { console.log('logStream2: ', data); this.queue(data) })
+  //var logStream2 = through(function(data) { console.log('logStream2: ', data); this.queue(data) })
 
   //var fileWriteStream = streamSaver.createWriteStream(meta.name);
   //var fileWriteStream = streamSaver.createWriteStream("test.file");
@@ -36,7 +36,9 @@ client.on('stream', function(stream, meta) {
   var fileBuffer = new Buffer([], 'binary');
   // Also should ZIP this before encrypt
   //stream.pipe(logStream).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
-  stream.pipe(logStream).pipe(decipher).on('data', function(chunk) {
+
+  //stream.pipe(logStream).pipe(decipher).on('data', function(chunk) {
+  stream.pipe(logStream).on('data', function(chunk) {
     fileBuffer = Buffer.concat([fileBuffer, Buffer(chunk, 'binary')]);
   }).on('end', function() {
     var blob = new Blob([fileBuffer], { type: 'octet/stream' });
@@ -97,6 +99,12 @@ client.on('open', function(){
 		//for(var i = 0; i<this.files.length; i++){
 			//var file =  this.files[i];
 			var file =  this.files[0];
+      var logStream = through(function(data) {
+        console.log('logStream decrypted: ', data);
+        debugger;
+        this.queue();
+      });
+
 			// This code is only for demo ...
 			//console.group("File "+i);
       console.group("File 1");
@@ -108,40 +116,33 @@ client.on('open', function(){
 
       var reader = new FileStream(file);
 
-      // Init the cyper bits
-      var cipher = crypto.createCipheriv('aes-128-cbc', sessionKeyTestBuff, ivTestBuff);
-      console.log("Creating fileReader stream from the file");
-      console.log("Creating stream with file data");
-      var stream = self.createStream({name: file.name, size: file.size});
+      reader.on('readable', function() {
+        console.log('Reader is readable');
 
-      console.log("Piping fileBuffer through cipher then stream");
-      /*
-      reader.on('data', function(chunk) {
-        console.log('Got chunk from file reader');
-        cipher.write(chunk);
+        // Init the cyper bits
+        var cipher = crypto.createCipheriv('aes-128-cbc', sessionKeyTestBuff, ivTestBuff);
+        console.log("Creating fileReader stream from the file");
+        console.log("Creating stream with file data");
+        var stream = self.createStream({name: file.name, size: file.size});
+
+        console.log("Piping fileBuffer through cipher then stream");
+
+        //reader.pipe(cipher).pipe(logStream).pipe(stream);
+        //reader.pipe(logStream).pipe(stream);
+        reader.pipe(stream);
       });
 
-      cipher.on('data', function(chunk) {
-        console.log('Got chunk from cipher');
-        stream.write(chunk);
+      reader.on('end', function() {
+        console.log('Reader is done...');
       });
-      */
-      //reader.pipe(cipher).pipe(stream);
-      reader.pipe(cipher).pipe(stream);
 
-      //debugger;
+      var oldReaderEmit = reader.emit;
 
-      //var decipher = crypto.createDecipheriv('aes-128-cbc', sessionKeyTestBuff, ivTestBuff);
-
-      //var decryptTest = encryptedStream.pipe(decipher)
-
-      /*
-      var tx = 0;
-      stream.on('data', function(data) {
-        $('#progress').text(Math.round(tx+=data.rx*100) + '% complete');
-      });
-      */
-		//}
+      reader.emit = function() {
+        var emitArgs = arguments;
+        console.log('emitting: ', emitArgs);
+        oldReaderEmit.apply(reader, arguments);
+      };
 	}, false);
 
 });
