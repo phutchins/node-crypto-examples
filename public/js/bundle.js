@@ -21538,7 +21538,6 @@ client.on('open', function(){
 			var file =  this.files[0];
       var logStream = through(function(data) {
         console.log('logStream decrypted: ', data);
-        debugger;
         this.queue();
       });
 
@@ -21552,23 +21551,18 @@ client.on('open', function(){
       console.groupEnd();
 
       var reader = new FileStream(file);
-      //var reader = new FileStream('this is a test');
 
-      reader.on('readable', function() {
-        console.log('Reader is readable');
+      // Init the cipher bits
+      var cipher = crypto.createCipheriv('aes-128-cbc', sessionKeyTestBuff, ivTestBuff);
 
-        // Init the cyper bits
-        var cipher = crypto.createCipheriv('aes-128-cbc', sessionKeyTestBuff, ivTestBuff);
-        console.log("Creating fileReader stream from the file");
-        console.log("Creating stream with file data");
-        var stream = self.createStream({name: file.name, size: file.size});
+      console.log("Creating fileReader stream from the file");
+      var stream = self.createStream({name: file.name, size: file.size});
 
-        console.log("Piping fileBuffer through cipher then stream");
+      console.log("Piping fileBuffer through cipher then stream");
 
-        //reader.pipe(cipher).pipe(logStream).pipe(stream);
-        //reader.pipe(logStream).pipe(stream);
-        reader.pipe(stream);
-      });
+      //reader.pipe(cipher).pipe(logStream).pipe(stream);
+      //reader.pipe(logStream).pipe(stream);
+      reader.pipe(stream);
 
       reader.on('end', function() {
         console.log('Reader is done...');
