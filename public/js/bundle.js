@@ -18313,9 +18313,15 @@ function EVP_BytesToKey (password, salt, keyLen, ivLen) {
 const Readable = require('stream').Readable;
 const inherits = require('util').inherits;
 
-function FileStream(options) {
+// Options by itself makes the events work but
+// when it's content, options, the content works but doesn't do eents
+function FileStream(content, options) {
   if (!(this instanceof FileStream))
-    return new FileStream(options);
+    return new FileStream(content, options);
+
+  console.log('[CONSTRUCTOR] FileStream Content: ', content, 'Options: ', options);
+
+  this.content = content;
   Readable.call(this, options);
 }
 
@@ -18323,27 +18329,26 @@ inherits(FileStream, Readable);
 
 FileStream.prototype._read = function (size) {
   var self = this;
+  console.log('[FileStream][_read] File-Stream got _read, size: ', this.content.size, 'Content is: ', this.content);
 
-  console.log('File-Stream got _read, size: %s this.curIndex: %s  ', size, this.curIndex);
-
-  if (this.counter-- === 0) {
-    console.log('END OF DATA STREAM');
-  }
-
-  if (!self.content) {
-    // ******************
-    // The problem is that this is never getting called!
-    // ******************
-    console.log('End of data through file-stream');
-    self.push(null);
+  if (this.content.size === 0) {
+    console.log('[FileStream][_read] End of data through file-stream');
+    return this.push(null);
   } else {
-    console.log('Sending data through file-stream');
-    var chunkBlob = self.content.slice(0, size);
+    console.log('[FileStream][_read] Sending data through file-stream');
 
-		blobToBuffer(chunkBlob, function (err, chunkBuffer) {
+    var chunkBlob = this.content.slice(0, size);
+	  this.content = this.content.slice(size);
+
+    console.log('[FileStream][_read] this.content: ', this.content);
+
+		//blobToBuffer(chunkBlob, function (err, chunkBuffer) {
+		blobToBuffer(chunkBlob, function(err, chunkBuffer) {
 			self.push(chunkBuffer);
-			self.content = self.content.slice(size);
     });
+
+   //this.push(this.content.slice(0, size));
+   //this.content = this.content.slice(size);
   }
 };
 
@@ -18359,8 +18364,16 @@ function blobToBuffer (blob, cb) {
 
   function onLoadEnd (e) {
     reader.removeEventListener('loadend', onLoadEnd, false);
-    if (e.error) cb(e.error);
-    else cb(null, new Buffer(reader.result));
+
+    if (e.error) {
+      cb(e.error);
+    } else {
+      var readerString = String.fromCharCode.apply(null, new Uint8Array(reader.result));
+
+      console.log('[FileStream][blobToBuffer] FileReader read chunk from file: %s', readerString);
+
+      cb(null, new Buffer(reader.result));
+    }
   }
 
   reader.addEventListener('loadend', onLoadEnd, false);
@@ -21539,6 +21552,7 @@ client.on('open', function(){
       console.groupEnd();
 
       var reader = new FileStream(file);
+      //var reader = new FileStream('this is a test');
 
       reader.on('readable', function() {
         console.log('Reader is readable');
@@ -21562,11 +21576,13 @@ client.on('open', function(){
 
       var oldReaderEmit = reader.emit;
 
+      // Lets us know what events are being emitted
       reader.emit = function() {
         var emitArgs = arguments;
         console.log('emitting: ', emitArgs);
         oldReaderEmit.apply(reader, arguments);
       };
+
 	}, false);
 
 });

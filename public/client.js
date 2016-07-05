@@ -115,6 +115,7 @@ client.on('open', function(){
       console.groupEnd();
 
       var reader = new FileStream(file);
+      //var reader = new FileStream('this is a test');
 
       reader.on('readable', function() {
         console.log('Reader is readable');
@@ -138,11 +139,13 @@ client.on('open', function(){
 
       var oldReaderEmit = reader.emit;
 
+      // Lets us know what events are being emitted
       reader.emit = function() {
         var emitArgs = arguments;
         console.log('emitting: ', emitArgs);
         oldReaderEmit.apply(reader, arguments);
       };
+
 	}, false);
 
 });
