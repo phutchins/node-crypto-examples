@@ -40,17 +40,6 @@ server.on('connection', function(client){
     console.log('Saving file to disk');
 
   });
-
-
-
- /*
-  var s = new stream.Readable();
-  s._read = function noop() {}; // redundant? see update below
-  s.push('this is some text to send');
-  s.push(null);
-
-  client.send(s, { name: 'test_file1.txt' });
-  */
 });
 
 app.listen(4000, function() {
