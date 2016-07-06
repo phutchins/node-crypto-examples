@@ -11,11 +11,11 @@
   "author": "",
   "license": "AGPL-2.0",
   "dependencies": {
-    "binaryjs": "^0.2.2",
+    "binaryjs": "binaryjs/binaryjs#79f51d6",
     "buffer": "^4.6.0",
     "crypto-browserify": "^3.11.0",
     "express": "^4.13.4",
-    "phutchins/flip-stream-js": "^0.1.0",
+    "flip-stream-js": "^0.1.0",
     "through": "^2.3.8"
   }
 }

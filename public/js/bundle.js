@@ -18129,7 +18129,7 @@ module.exports={
   "_args": [
     [
       "elliptic@^6.0.0",
-      "/Users/philip/github/crypto-test/node_modules/browserify-sign"
+      "/Users/philip/github/node-crypto-examples/node_modules/browserify-sign"
     ]
   ],
   "_from": "elliptic@>=6.0.0 <7.0.0",
@@ -18164,7 +18164,7 @@ module.exports={
   "_shasum": "17781f2109ab0ec686b146bdcff5d2e8c6aeceda",
   "_shrinkwrap": null,
   "_spec": "elliptic@^6.0.0",
-  "_where": "/Users/philip/github/crypto-test/node_modules/browserify-sign",
+  "_where": "/Users/philip/github/node-crypto-examples/node_modules/browserify-sign",
   "author": {
     "email": "fedor@indutny.com",
     "name": "Fedor Indutny"
@@ -18319,37 +18319,37 @@ module.exports = {
 
 },{"./lib/readable.js":107,"./lib/writable.js":108}],107:[function(require,module,exports){
 (function (Buffer){
-const Readable = require('stream').Readable;
+const StreamReadable = require('stream').Readable;
 const inherits = require('util').inherits;
 
 // Options by itself makes the events work but
 // when it's content, options, the content works but doesn't do eents
-function FlipReadable(content, options) {
-  if (!(this instanceof FlipReadable))
-    return new FlipReadable(content, options);
+function Readable(content, options) {
+  if (!(this instanceof Readable))
+    return new Readable(content, options);
 
-  console.log('[CONSTRUCTOR] FlipReadable Content: ', content, 'Options: ', options);
+  console.log('[CONSTRUCTOR] Readable Content: ', content, 'Options: ', options);
 
   this.content = content;
-  Readable.call(this, options);
+  StreamReadable.call(this, options);
 }
 
-inherits(FlipReadable, Readable);
+inherits(Readable, StreamReadable);
 
-FlipReadable.prototype._read = function (size) {
+Readable.prototype._read = function (size) {
   var self = this;
-  console.log('[FlipReadable][_read] File-Stream got _read, size: ', this.content.size, 'Content is: ', this.content);
+  console.log('[Flip][_read] File-Stream got _read, size: ', this.content.size, 'Content is: ', this.content);
 
   if (this.content.size === 0) {
-    console.log('[FlipReadable][_read] End of data through file-stream');
+    console.log('[Flip][_read] End of data through file-stream');
     return this.push(null);
   } else {
-    console.log('[FlipReadable][_read] Sending data through file-stream');
+    console.log('[Flip][_read] Sending data through file-stream');
 
     var chunkBlob = this.content.slice(0, size);
 	  this.content = this.content.slice(size);
 
-    console.log('[FlipReadable][_read] this.content: ', this.content);
+    console.log('[Flip][_read] this.content: ', this.content);
 
 		//blobToBuffer(chunkBlob, function (err, chunkBuffer) {
 		blobToBuffer(chunkBlob, function(err, chunkBuffer) {
@@ -18376,7 +18376,7 @@ function blobToBuffer (blob, cb) {
     } else {
       var readerString = String.fromCharCode.apply(null, new Uint8Array(reader.result));
 
-      console.log('[FlipReadable][blobToBuffer] FileReader read chunk from file: %s', readerString);
+      console.log('[Flip][blobToBuffer] FileReader read chunk from file: %s', readerString);
 
       cb(null, new Buffer(reader.result));
     }
@@ -18386,21 +18386,21 @@ function blobToBuffer (blob, cb) {
   reader.readAsArrayBuffer(blob);
 }
 
-module.exports = FlipReadable;
+module.exports = Readable;
 
 }).call(this,require("buffer").Buffer)
 },{"buffer":4,"stream":24,"util":28}],108:[function(require,module,exports){
-const Writable = require('stream').Writable;
+const StreamWritable = require('stream').Writable;
 const inherits = require('util').inherits;
 
-function FlipWritable(content, options) {
-  if (!(this instanceof FlipWritable))
-    return new FlipWritable(content, options);
+function Writable(content, options) {
+  if (!(this instanceof Writable))
+    return new Writable(content, options);
 }
 
-inherits(FlipWritable, Writable);
+inherits(Writable, StreamWritable);
 
-module.exports = FlipWritable;
+module.exports = Writable;
 
 },{"stream":24,"util":28}],109:[function(require,module,exports){
 var hash = exports;
