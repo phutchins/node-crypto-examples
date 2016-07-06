@@ -38,7 +38,6 @@ server.on('connection', function(client){
     });
 
     console.log('Saving file to disk');
-
   });
 });
 
