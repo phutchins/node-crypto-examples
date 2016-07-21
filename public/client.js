@@ -72,16 +72,22 @@ client.on('open', function(){
 });
 
 
-client.on('stream', function(stream, meta) {
+client.on('stream', function(binStream, meta) {
   // Create a writable stream so pipe the incoming data through
   //var writable = new Writable();
   console.log('Got stream from server for file %s', meta.name);
+
+  debugger;
 
   var logStream1 = through(function(data) {
     console.log('logStream1: ', data);
     // Have to convert the data to a buffer from ArrayBuffer so that it can be decrypted
     // Need to find a better way to do this than inside of through ?
+    //
+    debugger;
+
     this.queue(new Buffer(data));
+    //this.queue(data);
   });
 
   var logStream2 = through(function(data) {
@@ -102,17 +108,26 @@ client.on('stream', function(stream, meta) {
 
   console.log('Receiving file, piping through decipher, then saving');
 
-  stream.pipe(logStream1).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
-  //stream.pipe(decipher).pipe(logStream).on('data', function(chunk) {
+  var passthrough = stream.PassThrough();
+
+  debugger;
+
+  //stream.pipe(logStream1).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
+
+  binStream.pipe(logStream1).pipe(passthrough).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
+  //binStream.pipe(decipher).pipe(logStream2).on('data', function(chunk) {
     console.log('Pushing chunk to fileBuffer for saving to disk');
-    fileBuffer = Buffer.concat([fileBuffer, Buffer(chunk, 'binary')]);
+    debugger;
+    var chunkString = chunk.toString('binary');
+    debugger;
+    fileBuffer = Buffer.concat([fileBuffer, Buffer(chunkString, 'binary')]);
   }).on('end', function() {
     var blob = new Blob([fileBuffer], { type: 'octet/stream' });
     var url = URL.createObjectURL(blob);
     window.open(url);
   });
 
-  stream.on('end', function() {
+  passthrough.on('end', function() {
     console.log('File download completed.');
   });
 });
