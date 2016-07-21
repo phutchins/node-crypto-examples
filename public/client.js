@@ -5,6 +5,7 @@ var stream = require('stream');
 var WritableStream = stream.Writable();
 var FlipStream = require('flip-stream-js');
 var through = require('through');
+var Handle = require('./handle');
 
 // Hardcoding sessionKey and iv for testing
 var sessionKey = new Buffer('93d1d1541a976333673935683f49b5e8', 'hex');
@@ -72,63 +73,20 @@ client.on('open', function(){
 });
 
 
-client.on('stream', function(binStream, meta) {
-  // Create a writable stream so pipe the incoming data through
-  //var writable = new Writable();
-  console.log('Got stream from server for file %s', meta.name);
+client.on('stream', function(fileStream, meta) {
+  var handle = new window.Handle();
 
-  debugger;
+  var streamData = {
+    fileStream: fileStream,
+    metadata: meta
+  };
 
-  var logStream1 = through(function(data) {
-    console.log('logStream1: ', data);
-    // Have to convert the data to a buffer from ArrayBuffer so that it can be decrypted
-    // Need to find a better way to do this than inside of through ?
-    //
-    debugger;
+  handle.binStream(streamData, function(err) {
+    if (err) {
+      return console.log("Error handling stream");
+    }
 
-    this.queue(new Buffer(data));
-    //this.queue(data);
-  });
-
-  var logStream2 = through(function(data) {
-    console.log('logStream2: ', data); this.queue(data)
-  });
-
-  //var fileWriteStream = streamSaver.createWriteStream(meta.name);
-  //var fileWriteStream = streamSaver.createWriteStream("test.file");
-
-  console.log('sessionKey: %s', sessionKey.toString('hex'));
-  console.log('iv: %s', iv.toString('hex'));
-
-  // Should use authentication: http://lollyrock.com/articles/nodejs-encryption/
-  // Init the cyper bits
-  var decipher = crypto.createDecipheriv('aes-128-cbc', sessionKey, iv);
-  var fileBuffer = new Buffer([], 'binary');
-  // Also should ZIP this before encrypt
-
-  console.log('Receiving file, piping through decipher, then saving');
-
-  var passthrough = stream.PassThrough();
-
-  debugger;
-
-  //stream.pipe(logStream1).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
-
-  binStream.pipe(logStream1).pipe(passthrough).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
-  //binStream.pipe(decipher).pipe(logStream2).on('data', function(chunk) {
-    console.log('Pushing chunk to fileBuffer for saving to disk');
-    debugger;
-    var chunkString = chunk.toString('binary');
-    debugger;
-    fileBuffer = Buffer.concat([fileBuffer, Buffer(chunkString, 'binary')]);
-  }).on('end', function() {
-    var blob = new Blob([fileBuffer], { type: 'octet/stream' });
-    var url = URL.createObjectURL(blob);
-    window.open(url);
-  });
-
-  passthrough.on('end', function() {
-    console.log('File download completed.');
+    console.log("Handled strema without error");
   });
 });
 

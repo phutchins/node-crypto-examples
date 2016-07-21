@@ -21461,6 +21461,7 @@ var stream = require('stream');
 var WritableStream = stream.Writable();
 var FlipStream = require('flip-stream-js');
 var through = require('through');
+var Handle = require('./handle');
 
 // Hardcoding sessionKey and iv for testing
 var sessionKey = new Buffer('93d1d1541a976333673935683f49b5e8', 'hex');
@@ -21528,10 +21529,72 @@ client.on('open', function(){
 });
 
 
-client.on('stream', function(binStream, meta) {
+client.on('stream', function(fileStream, meta) {
+  var handle = new window.Handle();
+
+  var streamData = {
+    fileStream: fileStream,
+    metadata: meta
+  };
+
+  handle.binStream(streamData, function(err) {
+    if (err) {
+      return console.log("Error handling stream");
+    }
+
+    console.log("Handled strema without error");
+  });
+});
+
+
+  /*
+  box.on('dragenter', doNothing);
+    box.on('dragover', doNothing);
+    box.text('Drag files here');
+    box.on('drop', function(e){
+      e.originalEvent.preventDefault();
+      var file = e.originalEvent.dataTransfer.files[0];
+
+       // Add to list of uploaded files
+       $('<div align="center"></div>').append($('<a></a>').text(file.name).prop('href', '/'+file.name)).appendTo('body');
+
+      // `client.send` is a helper function that creates a stream with the
+      // given metadata, and then chunks up and streams the data.
+      var stream = client.send(file, {name: file.name, size: file.size});
+
+      // Print progress
+      var tx = 0;
+      stream.on('data', function(data){
+        $('#progress').text(Math.round(tx+=data.rx*100) + '% complete');
+      });
+    });
+  });
+  */
+
+
+}).call(this,require("buffer").Buffer)
+},{"../public/js/myModule.js":142,"./handle":141,"buffer":4,"crypto-browserify":77,"flip-stream-js":106,"stream":24,"through":139}],141:[function(require,module,exports){
+(function (Buffer){
+'use strict'
+
+var crypto = require('crypto-browserify');
+var stream = require('stream');
+var through = require('through');
+
+function Handle(options) {
+  if (!(this instanceof Handle)) {
+    return new Handle(options);
+  }
+}
+
+Handle.prototype.binStream = function binStream(data, callback) {
+  var fileStream = data.fileStream;
+  var metadata = data.metadata
+  var sessionKey = new Buffer('93d1d1541a976333673935683f49b5e8', 'hex');
+  var iv = new Buffer('27c3465f041e046a61a6f8dc01f0db3d', 'hex');
   // Create a writable stream so pipe the incoming data through
   //var writable = new Writable();
-  console.log('Got stream from server for file %s', meta.name);
+  console.log('Got stream from server for file %s', metadata.name);
 
   debugger;
 
@@ -21570,8 +21633,8 @@ client.on('stream', function(binStream, meta) {
 
   //stream.pipe(logStream1).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
 
-  binStream.pipe(logStream1).pipe(passthrough).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
-  //binStream.pipe(decipher).pipe(logStream2).on('data', function(chunk) {
+  fileStream.pipe(logStream1).pipe(passthrough).pipe(decipher).pipe(logStream2).on('data', function(chunk) {
+  //fileStream.pipe(decipher).pipe(logStream2).on('data', function(chunk) {
     console.log('Pushing chunk to fileBuffer for saving to disk');
     debugger;
     var chunkString = chunk.toString('binary');
@@ -21586,36 +21649,12 @@ client.on('stream', function(binStream, meta) {
   passthrough.on('end', function() {
     console.log('File download completed.');
   });
-});
+};
 
-
-  /*
-  box.on('dragenter', doNothing);
-    box.on('dragover', doNothing);
-    box.text('Drag files here');
-    box.on('drop', function(e){
-      e.originalEvent.preventDefault();
-      var file = e.originalEvent.dataTransfer.files[0];
-
-       // Add to list of uploaded files
-       $('<div align="center"></div>').append($('<a></a>').text(file.name).prop('href', '/'+file.name)).appendTo('body');
-
-      // `client.send` is a helper function that creates a stream with the
-      // given metadata, and then chunks up and streams the data.
-      var stream = client.send(file, {name: file.name, size: file.size});
-
-      // Print progress
-      var tx = 0;
-      stream.on('data', function(data){
-        $('#progress').text(Math.round(tx+=data.rx*100) + '% complete');
-      });
-    });
-  });
-  */
-
+window.Handle = Handle;
 
 }).call(this,require("buffer").Buffer)
-},{"../public/js/myModule.js":141,"buffer":4,"crypto-browserify":77,"flip-stream-js":106,"stream":24,"through":139}],141:[function(require,module,exports){
+},{"buffer":4,"crypto-browserify":77,"stream":24,"through":139}],142:[function(require,module,exports){
 // greetings.js
 module.exports = function(name) {
     return 'Hello ' + name + '!';
